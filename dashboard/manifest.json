@@ -1,0 +1,11 @@
+{
+  "name": "token-meter",
+  "label": "Token Meter",
+  "description": "Rolling one-second stream-estimated output speed, usage-corrected turn totals, and a pinned final average.",
+  "icon": "Activity",
+  "version": "1.4.0",
+  "api": "plugin_api.py",
+  "tab": {
+    "hidden": true
+  }
+}
