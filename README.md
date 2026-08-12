@@ -1,5 +1,7 @@
 # Hermes Token Meter
 
+**English** | [简体中文](README.zh-CN.md)
+
 A real-time token usage meter for the [Hermes] desktop status bar. While a
 response streams it shows per-turn input/output tokens and a **rolling
 one-second output speed**; when the turn finishes it pins the whole-turn
