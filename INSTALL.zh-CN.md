@@ -1,5 +1,9 @@
 # Token Meter — 手动安装指南
 
+> 提示：仓库根目录还提供一键安装脚本——`./install.sh`（Linux/macOS/
+> Git-Bash）或 `install.ps1`（Windows PowerShell）。本文件记录的是它们执行
+> 的手动复制步骤。
+
 将两个目录复制到你的 Hermes 主目录（包含 `state.db` 的目录，即 `HERMES_HOME`
 环境变量指向的位置，通常为 `~/.hermes`；Windows 上常为 `%LOCALAPPDATA%\hermes`）：
 

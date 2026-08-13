@@ -96,6 +96,7 @@ token-meter/
 ```bash
 git clone https://github.com/3684142/hermes-token-meter.git
 cd hermes-token-meter
+chmod +x install.sh          # only needed if the exec bit was lost (e.g. unpacked from a zip)
 ./install.sh                  # Linux / macOS / Git-Bash on Windows
 # or on Windows PowerShell:
 # powershell -ExecutionPolicy Bypass -File install.ps1

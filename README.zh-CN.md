@@ -85,6 +85,7 @@ token-meter/
 ```bash
 git clone https://github.com/3684142/hermes-token-meter.git
 cd hermes-token-meter
+chmod +x install.sh          # 仅当可执行位丢失时（如从 zip 解压）
 ./install.sh                  # Linux / macOS / Git-Bash on Windows
 # Windows PowerShell 则执行：
 # powershell -ExecutionPolicy Bypass -File install.ps1

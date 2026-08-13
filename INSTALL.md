@@ -1,5 +1,9 @@
 # Token Meter — Manual Install
 
+> Tip: the repo root also ships one-command installers — `./install.sh`
+> (Linux/macOS/Git-Bash) or `install.ps1` (Windows PowerShell). This file
+> documents the manual copy steps they perform.
+
 Copy the two directories into your Hermes home directory (the folder that
 contains `state.db`, usually `~/.hermes` or the path of your `HERMES_HOME`
 environment variable; on Windows commonly `%LOCALAPPDATA%\hermes`):
