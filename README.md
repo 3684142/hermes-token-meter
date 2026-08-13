@@ -1,10 +1,19 @@
 # token-meter
 
+<p align="center">
+  <img alt="Hermes Desktop plugin" src="https://img.shields.io/badge/Hermes-Desktop%20Plugin-2f81f7?style=flat-square">
+  <img alt="JavaScript ESM" src="https://img.shields.io/badge/JavaScript-ESM-f7df1e?style=flat-square&logo=javascript&logoColor=111111">
+  <img alt="Python FastAPI backend" src="https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square&logo=python&logoColor=white">
+  <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square">
+  <a href="https://github.com/3684142/hermes-token-meter/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/3684142/hermes-token-meter?style=flat-square&label=release"></a>
+  <a href="https://github.com/3684142/hermes-token-meter/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/3684142/hermes-token-meter/check.yml?branch=main&style=flat-square&label=check"></a>
+</p>
+
+**English** | [简体中文](README.zh-CN.md)
+
 Real-time token usage meter for the Hermes desktop status bar: rolling
 one-second output speed while a response streams, usage-corrected per-turn
 totals, and a pinned final average.
-
-**English** | [简体中文](README.zh-CN.md)
 
 Status bar while a turn is streaming:
 
@@ -60,13 +69,20 @@ Design rules:
 
 ```text
 token-meter/
-├── plugin.js                  # frontend: event-driven store + status-bar chip + popover
-├── plugin.test.mjs            # state-machine tests + display assertions
-├── plugin.yaml                # plugin metadata (required for `hermes plugins enable`)
-├── dashboard/
-│   ├── manifest.json          # dashboard plugin discovery (status-bar-only)
-│   ├── plugin_api.py          # thin FastAPI router, hot-reloads impl.py per request
-│   └── impl.py                # READ-ONLY state.db queries
+├── install.sh                  # one-command installer (Linux/macOS/Git-Bash)
+├── install.ps1                 # one-command installer (Windows PowerShell)
+├── desktop-plugins/
+│   └── token-meter/
+│       ├── plugin.js           # frontend: event-driven store + status-bar chip + popover
+│       └── plugin.test.mjs     # state-machine tests + display assertions
+├── plugins/
+│   └── token-meter/
+│       ├── __init__.py         # package marker
+│       ├── plugin.yaml         # plugin metadata (required for `hermes plugins enable`)
+│       └── dashboard/
+│           ├── manifest.json   # dashboard plugin discovery (status-bar-only)
+│           ├── plugin_api.py   # thin FastAPI router, hot-reloads impl.py per request
+│           └── impl.py         # READ-ONLY state.db queries
 ├── INSTALL.md
 ├── INSTALL.zh-CN.md
 ├── README.md
@@ -75,7 +91,21 @@ token-meter/
 
 ## Install
 
-**Option A — release package (recommended)**
+**Option A — one-command installer (recommended)**
+
+```bash
+git clone https://github.com/3684142/hermes-token-meter.git
+cd hermes-token-meter
+./install.sh                  # Linux / macOS / Git-Bash on Windows
+# or on Windows PowerShell:
+# powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+The installer copies both directories into `$HERMES_HOME` (default `~/.hermes`;
+set `HERMES_HOME=/path/to/profile` or use `-HermesHome` to target another
+profile) and enables the plugin when the Hermes CLI is available.
+
+**Option B — release package**
 
 Download `hermes-token-meter-<version>-install.zip` from the
 [Releases](https://github.com/3684142/hermes-token-meter/releases) page.
@@ -88,7 +118,7 @@ desktop-plugins/token-meter/  →  <hermes-home>/desktop-plugins/token-meter/
 plugins/token-meter/          →  <hermes-home>/plugins/token-meter/
 ```
 
-**Option B — git**
+**Option C — manual copy**
 
 ```bash
 git clone https://github.com/3684142/hermes-token-meter.git
@@ -103,6 +133,7 @@ hermes plugins enable token-meter
 ```
 
 Restart the Hermes desktop app — dashboard backend routes mount at startup.
+**Reloading desktop plugins (⌘K) alone does NOT remount the Python backend.**
 The status-bar chip appears bottom-right.
 
 Verify:

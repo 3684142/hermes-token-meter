@@ -1,7 +1,13 @@
 # token-meter
 
-Hermes 桌面端状态栏的实时 Token 用量仪表：回复流式生成时显示滚动的一秒实时
-速度，回合结束时用 Provider 权威数据校正本轮累计值并固定显示整轮平均速度。
+<p align="center">
+  <img alt="Hermes Desktop plugin" src="https://img.shields.io/badge/Hermes-Desktop%20Plugin-2f81f7?style=flat-square">
+  <img alt="JavaScript ESM" src="https://img.shields.io/badge/JavaScript-ESM-f7df1e?style=flat-square&logo=javascript&logoColor=111111">
+  <img alt="Python FastAPI backend" src="https://img.shields.io/badge/Python-FastAPI-3776ab?style=flat-square&logo=python&logoColor=white">
+  <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square">
+  <a href="https://github.com/3684142/hermes-token-meter/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/3684142/hermes-token-meter?style=flat-square&label=release"></a>
+  <a href="https://github.com/3684142/hermes-token-meter/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/3684142/hermes-token-meter/check.yml?branch=main&style=flat-square&label=check"></a>
+</p>
 
 [English](README.md) | **简体中文**
 
@@ -52,13 +58,20 @@ Tokens ↑36.6k ↓1.4k  77.8 tok/s
 
 ```text
 token-meter/
-├── plugin.js                  # 前端：事件驱动状态机 + 状态栏徽标 + 弹出面板
-├── plugin.test.mjs            # 状态机测试 + 显示断言
-├── plugin.yaml                # 插件元数据（`hermes plugins enable` 必需）
-├── dashboard/
-│   ├── manifest.json          # 仪表盘插件发现（纯状态栏插件）
-│   ├── plugin_api.py          # 轻量 FastAPI 路由，按请求热重载 impl.py
-│   └── impl.py                # 只读查询 state.db
+├── install.sh                  # 一键安装脚本（Linux/macOS/Git-Bash）
+├── install.ps1                 # 一键安装脚本（Windows PowerShell）
+├── desktop-plugins/
+│   └── token-meter/
+│       ├── plugin.js           # 前端：事件驱动状态机 + 状态栏徽标 + 弹出面板
+│       └── plugin.test.mjs     # 状态机测试 + 显示断言
+├── plugins/
+│   └── token-meter/
+│       ├── __init__.py         # Python 包标记
+│       ├── plugin.yaml         # 插件元数据（`hermes plugins enable` 必需）
+│       └── dashboard/
+│           ├── manifest.json   # 仪表盘插件发现（纯状态栏插件）
+│           ├── plugin_api.py   # 轻量 FastAPI 路由，按请求热重载 impl.py
+│           └── impl.py         # 只读查询 state.db
 ├── INSTALL.md
 ├── INSTALL.zh-CN.md
 ├── README.md
@@ -67,7 +80,21 @@ token-meter/
 
 ## 安装
 
-**方式一：Release 安装包（推荐）**
+**方式一：一键安装脚本（推荐）**
+
+```bash
+git clone https://github.com/3684142/hermes-token-meter.git
+cd hermes-token-meter
+./install.sh                  # Linux / macOS / Git-Bash on Windows
+# Windows PowerShell 则执行：
+# powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+脚本会把两个目录复制到 `$HERMES_HOME`（默认 `~/.hermes`；可用
+`HERMES_HOME=/path/to/profile` 或 `-HermesHome` 指定其他配置目录），并在
+Hermes CLI 可用时自动启用插件。
+
+**方式二：Release 安装包**
 
 从 [Releases 页面](https://github.com/3684142/hermes-token-meter/releases)
 下载 `hermes-token-meter-<版本>-install.zip`，解压后把两个目录复制到你的
@@ -79,7 +106,7 @@ desktop-plugins/token-meter/  →  <hermes-home>/desktop-plugins/token-meter/
 plugins/token-meter/          →  <hermes-home>/plugins/token-meter/
 ```
 
-**方式二：git 克隆**
+**方式三：手动复制**
 
 ```bash
 git clone https://github.com/3684142/hermes-token-meter.git
@@ -94,7 +121,8 @@ hermes plugins enable token-meter
 ```
 
 重启 Hermes 桌面应用——仪表盘后端路由在启动时挂载，状态栏右下角会出现
-Token 徽标。
+Token 徽标。**注意：⌘K 热重载桌面插件不会重新挂载 Python 后端，改后端后
+必须重启桌面应用。**
 
 验证：
 
