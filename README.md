@@ -39,6 +39,11 @@ Tokens ↑36.6k ↓1.4k  77.8 tok/s
 - **Session following** — switching conversations switches the meter; the idle
   state shows session totals aggregated across all model rows (a conversation
   that changes models spans several `session_model_usage` rows).
+- **Highlighted only while running** — the live speed wears the app's own
+  `text-primary` class, so it stands out during a turn and tracks every official
+  theme automatically (the highlight is borrowed from the host, never re-defined
+  here). Idle and finished readings stay unstyled, exactly like the rest of the
+  status bar: no pill, no border, no bold.
 
 ## How it works
 
@@ -64,6 +69,11 @@ Design rules:
 - The dashboard backend aggregates `session_model_usage` per `(session_id,
   model)` — reading only the newest row silently loses tokens from other
   models.
+- The status-bar highlight is the host's, not ours: the chip borrows the app's
+  own `text-primary` class and applies it only while a turn is live. The plugin's
+  own stylesheet is layout-only (no colour, weight, or box), so a theme switch —
+  or any future change to what the app means by "highlighted" — carries the
+  reading with it. Copying the resolved token would only cover the former.
 
 ## Files
 

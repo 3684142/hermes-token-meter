@@ -416,6 +416,7 @@ function startMeter(ctx) {
   const disposers = []
   let lastStatusBackstop = 0
 
+  disposers.push(ensureStyles())
   disposers.push(host.state.activeSessionId.subscribe(runtimeId => {
     void syncSelectedRuntime(runtimeId || null)
   }))
@@ -444,6 +445,55 @@ function startMeter(ctx) {
   ctx.onDispose(meterStop)
 }
 
+// Chip chrome. Tailwind only scans the app's own source tree, so a utility class
+// that only this plugin uses (`bg-(--ui-accent)/15`, `max-w-[8rem]`) compiles to
+// no rule at all — that is why an earlier version's highlight silently rendered
+// as bare text. Hence the small stylesheet below, injected into <head> at
+// register() and removed with the plugin.
+//
+// It is deliberately LAYOUT ONLY: no colour, weight, or box. The live highlight
+// is borrowed, not re-implemented — the speed wears the app's own `text-primary`,
+// the same class the status bar uses for its own highlighted reading
+// (`status.hasUpdate ? 'text-primary hover:text-primary'` on the update-behind
+// version item). Copying `color: var(--dt-primary)` into a rule of our own would
+// track a theme switch but NOT a future change to what "highlighted" means;
+// borrowing the class tracks both, for free. `text-primary` is used all over the
+// app's own source, so Tailwind always emits it — safe to borrow, unlike a class
+// only this plugin uses.
+//
+// Applied only while a turn is live (`data-live`), so idle renders exactly like
+// the rest of the bar. Two rejected shapes, kept here so they are not retried:
+// a filled pill inside a 1px inset ring read as a selected CONTROL and the ring
+// looked like a stray border around the numbers; and `font-weight: 600` made the
+// reading the only heavy text in a bar whose own highlight is colour-only.
+const CHIP_CLASS = 'tm-chip'
+const SPEED_CLASS = 'tm-speed'
+const HIGHLIGHT_CLASS = 'text-primary'
+const STYLE_ID = 'token-meter-styles'
+const CHIP_STYLES = `
+.${CHIP_CLASS} {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.tm-sub {
+  max-width: 8rem;
+}
+`
+
+function ensureStyles() {
+  if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return () => {}
+  const el = document.createElement('style')
+  el.id = STYLE_ID
+  el.textContent = CHIP_STYLES
+  document.head.appendChild(el)
+
+  return () => {
+    if (document.getElementById(STYLE_ID) === el) el.remove()
+  }
+}
+
 function ChipDetail() {
   const usage = useMeter()
   if (usage.phase === 'idle') {
@@ -458,19 +508,25 @@ function ChipDetail() {
   }
 
   const burn = (usage.turnInput || 0) + (usage.turnOutput || 0)
-  const speedText = usage.phase === 'active' ? fmtSpeed(usage.turnSpeed) : fmtSpeed(usage.speed)
+  const live = usage.phase === 'active'
+  const speedText = live ? fmtSpeed(usage.turnSpeed) : fmtSpeed(usage.speed)
   const outputText = fmtN(usage.turnOutput)
   const parts = []
   if (burn > 0) {
     parts.push(jsx('span', { key: 'tokens', children: `↑${fmtN(usage.turnInput)} ↓${outputText}` }))
-  } else if (usage.phase === 'active') {
-    parts.push(jsx('span', { key: 'waiting', className: 'text-(--ui-accent)', children: '…' }))
+  } else if (live) {
+    // Only the placeholder pulses. The live reading carries its own emphasis
+    // on the speed text, so nothing else here needs to fade.
+    parts.push(jsx('span', { key: 'waiting', className: 'animate-pulse', children: '…' }))
   }
   if (speedText) {
+    // The app's own highlight class, applied only while a turn is live — so the
+    // reading is styled by the host's own rule, not by anything this plugin
+    // defines, and idle renders exactly like the rest of the bar.
     parts.push(jsx('span', {
       key: 'speed',
-      className: usage.phase === 'active' ? 'text-(--ui-accent)' : 'text-(--ui-text-quaternary)',
-      children: usage.phase === 'done' ? `avg ${speedText}` : speedText
+      className: live ? `${SPEED_CLASS} ${HIGHLIGHT_CLASS}` : SPEED_CLASS,
+      children: live ? speedText : `avg ${speedText}`
     }))
   }
   if (usage.phase === 'done' && usage.elapsedMs > 0) {
@@ -479,7 +535,8 @@ function ChipDetail() {
   if (!parts.length) return null
 
   return jsx('span', {
-    className: `${usage.phase === 'active' ? 'animate-pulse rounded-md bg-(--ui-accent)/15 px-1.5 py-0.5 text-(--ui-accent)' : ''} flex items-center gap-1 tabular-nums`,
+    className: `${CHIP_CLASS} flex items-center`,
+    'data-live': live ? 'true' : 'false',
     children: parts
   })
 }
@@ -489,7 +546,7 @@ function Row({ label, value, sub }) {
     jsx('span', { className: 'min-w-0 flex-1 truncate text-(--ui-text-secondary)', children: label }),
     jsxs('div', { className: 'flex min-w-0 shrink-0 flex-col items-end text-right tabular-nums', children: [
       jsx('span', { className: 'whitespace-nowrap text-foreground', children: value }),
-      sub ? jsx('span', { className: 'max-w-[8rem] truncate text-[0.66rem] text-(--ui-text-quaternary)', children: sub }) : null
+      sub ? jsx('span', { className: 'tm-sub truncate text-[0.66rem] text-(--ui-text-quaternary)', children: sub }) : null
     ] })
   ] })
 }

@@ -242,4 +242,69 @@ assert.match(
   'the popup should still disclose a done-state estimated average in words'
 )
 
-console.log('token-meter state-machine tests: 12 passed; chip display assertions: 4 passed')
+// The highlight contract. Tailwind only scans THIS APP's source tree, so a
+// class only this plugin uses (`bg-(--ui-accent)/15` was the original) never
+// gets a rule and the live highlight silently renders as bare text. The plugin
+// therefore ships a small stylesheet — but ONLY for the one thing the host
+// cannot supply, layout. Every appearance rule is borrowed from the app:
+//   * running-only — nothing styled in the idle state,
+//   * plain highlighted TEXT — no fill, ring, border or shadow (a filled pill
+//     inside a ring read as a selected control, and the ring looked like a
+//     stray border around the numbers in a fresh session),
+//   * colour-only — the bar never re-weights its own highlight,
+//   * and NOT re-implemented: the live speed wears the app's own `text-primary`
+//     class, so it tracks both a theme switch AND any future change to what
+//     "highlighted" means, instead of copying today's token value.
+assert.match(source, /const STYLE_ID = 'token-meter-styles'/, 'the plugin must own its stylesheet id')
+assert.match(source, /document\.head\.appendChild\(el\)/, 'the plugin must inject its stylesheet into <head>')
+// Borrowing the host class, not copying its colour:
+assert.match(
+  source,
+  /const HIGHLIGHT_CLASS = 'text-primary'/,
+  'the highlight must borrow the app\'s own text-primary class'
+)
+assert.match(
+  source,
+  /className: live \? `\$\{SPEED_CLASS\} \$\{HIGHLIGHT_CLASS\}` : SPEED_CLASS/,
+  'the speed wears the host highlight class only while the turn is live'
+)
+// The rule is about what the plugin RENDERS, so strip comments first — the
+// header comment deliberately names the retired class to explain the bug.
+const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+// CHIP_STYLES is the plugin's own sheet: it must carry layout ONLY.
+const chipStyles = source.slice(
+  source.indexOf('const CHIP_STYLES = `') + 'const CHIP_STYLES = `'.length,
+  source.indexOf('`', source.indexOf('const CHIP_STYLES = `') + 'const CHIP_STYLES = `'.length)
+)
+assert.doesNotMatch(
+  chipStyles,
+  /color:|background|border|ring|shadow|outline|font-weight|font-medium|font-semibold|font-bold|data-live/,
+  'the plugin\'s own CSS must be layout-only — every appearance rule comes from the host'
+)
+assert.doesNotMatch(
+  code,
+  /var\(--dt-primary\)/,
+  'the highlight must not re-implement the token — that tracks a theme switch but not a meaning change'
+)
+assert.doesNotMatch(
+  code,
+  /bg-\(--ui-accent\)\//,
+  'no Tailwind class only this plugin uses — those compile to no rule at all'
+)
+assert.doesNotMatch(
+  code,
+  /box-shadow|outline:|border:|\.\$\{CHIP_CLASS\}\s*\{[^}]*background/,
+  'no fill, ring, border or shadow anywhere — a box around the numbers is the reported bug'
+)
+assert.doesNotMatch(
+  code,
+  /\[data-live='false'\]/,
+  'idle must be completely unstyled — the bar styles it, not the plugin'
+)
+assert.doesNotMatch(
+  code,
+  /--dt-primary-solid/,
+  'the retired filled-pill token must not come back'
+)
+
+console.log('token-meter state-machine tests: 12 passed; chip display assertions: 13 passed')
